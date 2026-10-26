@@ -1,0 +1,652 @@
+/* ========================================
+   TaxiProfit — основные стили приложения
+   ======================================== */
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.app-shell {
+  width: 100%;
+  max-width: 520px;
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 20px 16px 36px;
+  color: #202b3c;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.topbar h1 {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.8px;
+}
+
+.topbar p {
+  margin: 5px 0 0;
+  color: #8792a3;
+  font-size: 13px;
+}
+
+.panel {
+  margin-bottom: 16px;
+  padding: 20px;
+  border: 1px solid #edf0f4;
+  border-radius: 22px;
+  background: #ffffff;
+  box-shadow: 0 5px 22px #1b2a3d08;
+}
+
+.panel h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 750;
+}
+
+.panel h3 {
+  font-weight: 700;
+}
+
+.section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.section-heading p {
+  margin: 5px 0 0;
+  color: #8792a3;
+  font-size: 12px;
+}
+
+.section-symbol {
+  display: flex;
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: #e9f8f0;
+  color: #138354;
+  font-size: 22px;
+}
+
+/* ========================================
+   Прибыль и показатели
+   ======================================== */
+
+.profit-card {
+  padding: 24px;
+  border-radius: 24px;
+  background: #123f32;
+  color: #ffffff;
+}
+
+.profit-card p {
+  margin: 0;
+  color: #c3dfd3;
+  font-size: 13px;
+}
+
+.profit-card h2 {
+  margin: 12px 0 20px;
+  font-size: 36px;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.stat-card {
+  min-width: 0;
+  padding: 15px;
+  border: 1px solid #edf0f4;
+  border-radius: 17px;
+  background: #ffffff;
+}
+
+.stat-card span {
+  display: block;
+  color: #8792a3;
+  font-size: 12px;
+}
+
+.stat-card strong {
+  display: block;
+  margin-top: 8px;
+  font-size: 19px;
+  overflow-wrap: anywhere;
+}
+
+.positive-text {
+  color: #138354;
+}
+
+.negative-text {
+  color: #d85c54;
+}
+
+/* ========================================
+   Управление сменой
+   ======================================== */
+
+.shift-controls {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.shift-timer {
+  padding: 18px;
+  border: 1px solid #edf0f4;
+  border-radius: 18px;
+  background: #ffffff;
+}
+
+.shift-timer span {
+  display: block;
+  color: #8792a3;
+  font-size: 12px;
+}
+
+.shift-timer strong {
+  display: block;
+  margin-top: 8px;
+  font-size: 28px;
+  font-variant-numeric: tabular-nums;
+}
+
+button {
+  font: inherit;
+}
+
+.shift-controls button,
+.primary-button {
+  min-height: 48px;
+  padding: 12px 18px;
+  border: 0;
+  border-radius: 14px;
+  background: #138354;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.shift-controls button:hover,
+.primary-button:hover {
+  opacity: 0.9;
+}
+
+.shift-controls button:disabled,
+.primary-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* ========================================
+   Формы операций
+   ======================================== */
+
+.operation-form {
+  display: grid;
+  gap: 14px;
+}
+
+.form-field {
+  display: grid;
+  gap: 7px;
+}
+
+.form-field label {
+  color: #687489;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.form-field input,
+.form-field select,
+.form-field textarea,
+.operation-form input,
+.operation-form select,
+.operation-form textarea {
+  width: 100%;
+  min-height: 45px;
+  padding: 11px 13px;
+  border: 1px solid #dfe5ec;
+  border-radius: 12px;
+  outline: none;
+  background: #ffffff;
+  color: #202b3c;
+  font: inherit;
+  font-size: 14px;
+}
+
+.form-field input:focus,
+.form-field select:focus,
+.form-field textarea:focus,
+.operation-form input:focus,
+.operation-form select:focus,
+.operation-form textarea:focus {
+  border-color: #138354;
+  box-shadow: 0 0 0 3px #13835418;
+}
+
+.operation-form button {
+  min-height: 46px;
+  padding: 12px;
+  border: 0;
+  border-radius: 12px;
+  background: #138354;
+  color: #ffffff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* ========================================
+   Список операций
+   ======================================== */
+
+.operations-list {
+  display: grid;
+  gap: 10px;
+}
+
+.operation-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 13px 0;
+  border-bottom: 1px solid #edf0f4;
+}
+
+.operation-item:last-child {
+  border-bottom: 0;
+}
+
+.operation-info {
+  min-width: 0;
+}
+
+.operation-info strong {
+  display: block;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+.operation-info span {
+  display: block;
+  margin-top: 5px;
+  color: #8792a3;
+  font-size: 11px;
+}
+
+.operation-amount {
+  flex-shrink: 0;
+  font-size: 14px;
+  font-weight: 750;
+}
+
+.operation-amount.income {
+  color: #138354;
+}
+
+.operation-amount.expense {
+  color: #d85c54;
+}
+
+/* ========================================
+   История смен
+   ======================================== */
+
+.shift-history {
+  display: grid;
+  gap: 12px;
+}
+
+.shift-history-item {
+  padding: 15px;
+  border: 1px solid #edf0f4;
+  border-radius: 15px;
+  background: #ffffff;
+}
+
+.shift-history-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.shift-history-top strong {
+  font-size: 13px;
+}
+
+.shift-badge {
+  display: inline-block;
+  padding: 5px 9px;
+  border-radius: 8px;
+  background: #e9f8f0;
+  color: #138354;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.shift-history-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.shift-history-stats span {
+  display: block;
+  color: #8792a3;
+  font-size: 11px;
+}
+
+.shift-history-stats strong {
+  display: block;
+  margin-top: 5px;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.shift-duration {
+  margin-top: 12px;
+  color: #687489;
+  font-size: 12px;
+}
+
+/* ========================================
+   Аналитика
+   ======================================== */
+
+.analytics-panel {
+  overflow: hidden;
+}
+
+.analytics-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 5px;
+  padding: 5px;
+  border-radius: 12px;
+  background: #f0f3f6;
+}
+
+.analytics-tabs button {
+  min-height: 39px;
+  padding: 8px 5px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: #687489;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.analytics-tabs button.selected {
+  background: #ffffff;
+  color: #138354;
+  font-weight: 700;
+  box-shadow: 0 1px 4px #17233712;
+}
+
+.analytics-date {
+  margin: 15px 0;
+  color: #8792a3;
+  font-size: 12px;
+}
+
+.analytics-summary {
+  padding: 17px;
+  border-radius: 15px;
+  background: #f6f8fa;
+}
+
+.analytics-main-stat {
+  display: grid;
+  gap: 8px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #e5eaf0;
+}
+
+.analytics-main-stat span {
+  color: #718097;
+  font-size: 13px;
+}
+
+.analytics-main-stat strong {
+  font-size: 27px;
+  overflow-wrap: anywhere;
+}
+
+.analytics-stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  padding-top: 14px;
+}
+
+.analytics-stat-row span {
+  color: #718097;
+  font-size: 12px;
+}
+
+.analytics-stat-row strong {
+  font-size: 13px;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+.analytics-empty {
+  margin: 15px 0 0;
+  color: #8792a3;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+/* ========================================
+   График доходов, расходов и прибыли
+   Эти стили работают на всех экранах
+   ======================================== */
+
+.chart-title {
+  margin: 24px 0 13px;
+  font-size: 14px;
+}
+
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 15px;
+}
+
+.chart-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #687489;
+  font-size: 10px;
+}
+
+.chart-legend i {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+  border-radius: 3px;
+}
+
+.legend-income {
+  background: #16a879;
+}
+
+.legend-expenses {
+  background: #f0a35c;
+}
+
+.legend-profit {
+  background: #5685e8;
+}
+
+.chart-scroll {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+
+.chart-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 8px;
+  min-width: 0;
+}
+
+.chart-grid.chart-month {
+  grid-template-columns: repeat(31, minmax(15px, 1fr));
+  min-width: 560px;
+}
+
+.chart-day {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: center;
+  gap: 9px;
+}
+
+.chart-bars {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 3px;
+  width: 100%;
+  height: 130px;
+  min-height: 130px;
+  padding-top: 5px;
+  box-sizing: border-box;
+  border-bottom: 1px solid #e8edf2;
+}
+
+.chart-bar {
+  display: block;
+  flex: 0 0 10px;
+  min-width: 3px;
+  border-radius: 4px 4px 1px 1px;
+  transition: height 0.2s ease;
+}
+
+.bar-income {
+  background: #16a879;
+}
+
+.bar-expenses {
+  background: #f0a35c;
+}
+
+.bar-profit {
+  background: #5685e8;
+}
+
+.bar-negative-profit {
+  background: #d85c54;
+}
+
+.chart-day-label {
+  color: #778399;
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+/* ========================================
+   Адаптация для мобильных экранов
+   Здесь только дополнительные настройки
+   ======================================== */
+
+@media (max-width: 480px) {
+  .app-shell {
+    padding: 16px 12px 28px;
+  }
+
+  .topbar {
+    margin-bottom: 18px;
+  }
+
+  .topbar h1 {
+    font-size: 23px;
+  }
+
+  .panel {
+    padding: 16px;
+    border-radius: 18px;
+  }
+
+  .profit-card {
+    padding: 20px;
+  }
+
+  .profit-card h2 {
+    font-size: 30px;
+  }
+
+  .stat-card {
+    padding: 12px;
+  }
+
+  .stat-card strong {
+    font-size: 16px;
+  }
+
+  .analytics-summary {
+    padding: 14px;
+  }
+
+  .analytics-main-stat strong {
+    font-size: 24px;
+  }
+
+  .analytics-stat-row {
+    gap: 8px;
+  }
+
+  .chart-grid:not(.chart-month) {
+    gap: 4px;
+  }
+
+  .chart-bars {
+    gap: 2px;
+  }
+
+  .chart-bar {
+    flex-basis: 7px;
+  }
+}

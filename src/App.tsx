@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import './App.css'
 
 type OperationType = 'income' | 'expense'
@@ -9,27 +9,24 @@ type Operation = {
   category: string
   amount: number
   time: string
+  createdAt: number
 }
 
-const expenseCategories = [
-  'Бензин',
-  'Газ',
-  'Техжидкости',
-  'Мойка',
-  'Парковка',
-  'Запчасти',
-  'Прочее'
-]
+type Shift = {
+  id: string
+  startedAt: number
+  endedAt: number | null
+  operations: Operation[]
+}
 
-const incomeCategories = [
-  'Нал. База',
-  'Безнал База',
-  'Нал. Яндекс',
-  'Безнал Яндекс',
-  'Чаевые',
-  'Бонус',
-  'Прочее'
-]
+type AnalyticsPeriod = 'day' | 'week' | 'month'
+
+const SHIFT_STORAGE_KEY = 'taxiprofit-shifts'
+const LEGACY_STORAGE_KEY = 'taxiprofit-operations'
+
+const expenseCategories = ['Топливо', 'Комиссия агрегатора', 'Мойка', 'Парковка', 'Прочее']
+
+const incomeCategories = ['Заказ', 'Чаевые', 'Бонус', 'Прочее']
 
 function formatMoney(amount: number) {
   return new Intl.NumberFormat('ru-RU', {
@@ -39,39 +36,95 @@ function formatMoney(amount: number) {
   }).format(amount)
 }
 
+function formatDate(timestamp: number) {
+  return new Date(timestamp).toLocaleDateString('ru-RU', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric'
+  })
+}
+
+function formatDateTime(timestamp: number) {
+  return new Date(timestamp).toLocaleString('ru-RU', {
+    day: '2-digit',
+    month: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
+
+// Загружаем смены и при необходимости переносим старые операции.
+function loadShifts(): Shift[] {
+  try {
+    const savedShifts = localStorage.getItem(SHIFT_STORAGE_KEY)
+
+    if (savedShifts !== null) {
+      const parsed: unknown = JSON.parse(savedShifts)
+
+      if (Array.isArray(parsed)) {
+        return parsed as Shift[]
+      }
+    }
+
+    // Совместимость с предыдущей версией TaxiProfit.
+    const savedOperations = localStorage.getItem(LEGACY_STORAGE_KEY)
+
+    if (savedOperations) {
+      const parsed: unknown = JSON.parse(savedOperations)
+
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return [
+          {
+            id: crypto.randomUUID(),
+            startedAt: Date.now(),
+            endedAt: null,
+            operations: parsed as Operation[]
+          }
+        ]
+      }
+    }
+  } catch (error) {
+    console.error('Не удалось загрузить данные TaxiProfit:', error)
+  }
+
+  return []
+}
+
 function App() {
-  const [isShiftActive, setIsShiftActive] = useState(false)
-  const [shiftStartedAt, setShiftStartedAt] = useState<number | null>(null)
-  const [shiftEndedAt, setShiftEndedAt] = useState<number | null>(null)
+  const [shifts, setShifts] = useState<Shift[]>(loadShifts)
   const [now, setNow] = useState(Date.now())
 
-  const [operations, setOperations] = useState<Operation[]>([])
+  const [analyticsPeriod, setAnalyticsPeriod] = useState<AnalyticsPeriod>('week')
+
   const [type, setType] = useState<OperationType>('income')
   const [category, setCategory] = useState('Заказ')
   const [amount, setAmount] = useState('')
 
-  // Восстанавливаем операции после перезагрузки страницы
+  // Сохраняем всю историю смен.
   useEffect(() => {
     try {
-      const savedOperations = localStorage.getItem('taxiprofit-operations')
-
-      if (savedOperations) {
-        setOperations(JSON.parse(savedOperations) as Operation[])
-      }
-    } catch {
-      console.error('Не удалось загрузить сохранённые операции')
+      localStorage.setItem(SHIFT_STORAGE_KEY, JSON.stringify(shifts))
+    } catch (error) {
+      console.error('Не удалось сохранить смены:', error)
     }
-  }, [])
+  }, [shifts])
 
-  // Сохраняем операции при каждом изменении
+  // Обновляем часы, но не меняем время начала смены.
   useEffect(() => {
-    localStorage.setItem('taxiprofit-operations', JSON.stringify(operations))
-  }, [operations])
+    const timer = window.setInterval(() => {
+      setNow(Date.now())
+    }, 1000)
 
-  useEffect(() => {
-    const timer = window.setInterval(() => setNow(Date.now()), 1000)
     return () => window.clearInterval(timer)
   }, [])
+
+  // Активная смена — та, у которой ещё нет времени завершения.
+  const activeShift = shifts.find(shift => shift.endedAt === null)
+
+  // После завершения показываем последнюю смену.
+  const displayedShift = activeShift ?? shifts[0]
+
+  const operations = displayedShift?.operations ?? []
 
   const income = operations
     .filter(operation => operation.type === 'income')
@@ -87,26 +140,154 @@ function App() {
     operation => operation.type === 'income' && operation.category === 'Заказ'
   ).length
 
-  const elapsedSeconds =
-    shiftStartedAt === null
-      ? 0
-      : Math.max(0, Math.floor(((shiftEndedAt ?? now) - shiftStartedAt) / 1000))
+  const elapsedSeconds = displayedShift
+    ? Math.max(0, Math.floor(((displayedShift.endedAt ?? now) - displayedShift.startedAt) / 1000))
+    : 0
 
   const hours = Math.floor(elapsedSeconds / 3600)
   const minutes = Math.floor((elapsedSeconds % 3600) / 60)
   const seconds = elapsedSeconds % 60
 
+  // Начало выбранного аналитического периода.
+  const periodStart = new Date(now)
+  periodStart.setHours(0, 0, 0, 0)
+
+  if (analyticsPeriod === 'week') {
+    const daysSinceMonday = (periodStart.getDay() + 6) % 7
+    periodStart.setDate(periodStart.getDate() - daysSinceMonday)
+  } else if (analyticsPeriod === 'month') {
+    periodStart.setDate(1)
+  }
+
+  const periodDays =
+    analyticsPeriod === 'day'
+      ? 1
+      : analyticsPeriod === 'week'
+        ? 7
+        : new Date(periodStart.getFullYear(), periodStart.getMonth() + 1, 0).getDate()
+
+  const periodEnd = new Date(periodStart)
+  periodEnd.setDate(periodEnd.getDate() + periodDays)
+
+  // Учитываем смену по дате её начала.
+  const analyticsShifts = shifts.filter(
+    shift => shift.startedAt >= periodStart.getTime() && shift.startedAt < periodEnd.getTime()
+  )
+
+  const analyticsIncome = analyticsShifts.reduce(
+    (total, shift) =>
+      total +
+      shift.operations
+        .filter(operation => operation.type === 'income')
+        .reduce((sum, operation) => sum + operation.amount, 0),
+    0
+  )
+
+  const analyticsExpenses = analyticsShifts.reduce(
+    (total, shift) =>
+      total +
+      shift.operations
+        .filter(operation => operation.type === 'expense')
+        .reduce((sum, operation) => sum + operation.amount, 0),
+    0
+  )
+
+  const analyticsProfit = analyticsIncome - analyticsExpenses
+
+  const analyticsSeconds = analyticsShifts.reduce(
+    (total, shift) => total + Math.max(0, (shift.endedAt ?? now) - shift.startedAt) / 1000,
+    0
+  )
+
+  const analyticsHours = analyticsSeconds / 3600
+
+  const averageProfit = analyticsShifts.length > 0 ? analyticsProfit / analyticsShifts.length : 0
+
+  const analyticsHourlyProfit = analyticsHours > 0 ? analyticsProfit / analyticsHours : 0
+
+  function dateKey(date: Date) {
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+
+    return `${year}-${month}-${day}`
+  }
+
+  const chartData = Array.from({ length: periodDays }, (_, index) => {
+    const date = new Date(periodStart)
+    date.setDate(date.getDate() + index)
+
+    const key = dateKey(date)
+
+    const dayOperations = shifts.flatMap(shift =>
+      shift.operations.filter(operation => {
+        // Поддержка старых операций, если их ID — timestamp.
+        const timestamp = operation.createdAt ?? Number(operation.id)
+
+        if (!Number.isFinite(timestamp) || timestamp <= 0) {
+          return false
+        }
+
+        return dateKey(new Date(timestamp)) === key
+      })
+    )
+
+    // const dayOperations = shifts.flatMap(shift =>
+    //   shift.operations.filter(operation => {
+    //     return dateKey(new Date(operation.createdAt)) === key
+    //   })
+    // )
+
+    const dayIncome = dayOperations
+      .filter(operation => operation.type === 'income')
+      .reduce((sum, operation) => sum + operation.amount, 0)
+
+    const dayExpenses = dayOperations
+      .filter(operation => operation.type === 'expense')
+      .reduce((sum, operation) => sum + operation.amount, 0)
+
+    return {
+      key,
+      label: date.toLocaleDateString('ru-RU', {
+        day: 'numeric',
+        month: 'short'
+      }),
+      income: dayIncome,
+      expenses: dayExpenses,
+      profit: dayIncome - dayExpenses
+    }
+  })
+
+  const chartMax = Math.max(
+    1,
+    ...chartData.flatMap(day => [day.income, day.expenses, Math.abs(day.profit)])
+  )
+
   function startShift() {
-    setOperations([])
-    setShiftStartedAt(Date.now())
-    setShiftEndedAt(null)
-    setIsShiftActive(true)
+    if (activeShift) return
+
+    const newShift: Shift = {
+      id: crypto.randomUUID(),
+      startedAt: Date.now(),
+      endedAt: null,
+      operations: []
+    }
+
+    setShifts(previous => [newShift, ...previous])
     setNow(Date.now())
+    setAmount('')
   }
 
   function finishShift() {
-    setShiftEndedAt(Date.now())
-    setIsShiftActive(false)
+    if (!activeShift) return
+
+    const endedAt = Date.now()
+
+    setShifts(previous =>
+      previous.map(shift => (shift.id === activeShift.id ? { ...shift, endedAt } : shift))
+    )
+
+    setNow(endedAt)
   }
 
   function handleTypeChange(newType: OperationType) {
@@ -114,8 +295,10 @@ function App() {
     setCategory(newType === 'income' ? incomeCategories[0] : expenseCategories[0])
   }
 
-  function addOperation(event: React.FormEvent<HTMLFormElement>) {
+  function addOperation(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
+
+    if (!activeShift) return
 
     const parsedAmount = Number(amount.replace(',', '.'))
 
@@ -123,19 +306,28 @@ function App() {
       return
     }
 
-    setOperations(previous => [
-      {
-        id: Date.now(),
-        type,
-        category,
-        amount: parsedAmount,
-        time: new Date().toLocaleTimeString('ru-RU', {
-          hour: '2-digit',
-          minute: '2-digit'
-        })
-      },
-      ...previous
-    ])
+    const operation: Operation = {
+      id: Date.now(),
+      type,
+      category,
+      amount: parsedAmount,
+      time: new Date().toLocaleTimeString('ru-RU', {
+        hour: '2-digit',
+        minute: '2-digit'
+      }),
+      createdAt: Date.now()
+    }
+
+    setShifts(previous =>
+      previous.map(shift =>
+        shift.id === activeShift.id
+          ? {
+              ...shift,
+              operations: [operation, ...shift.operations]
+            }
+          : shift
+      )
+    )
 
     setAmount('')
   }
@@ -144,22 +336,29 @@ function App() {
     <main className='app-shell'>
       <header className='topbar'>
         <div className='brand'>
-          <div className='brand-icon'>181</div>
+          <div className='brand-icon'>T</div>
           <div>
             <h1>TaxiProfit</h1>
             <p>Твой заработок под контролем</p>
           </div>
         </div>
-        <span className={`status ${isShiftActive ? 'active' : ''}`}>
+
+        <span className={`status ${activeShift ? 'active' : ''}`}>
           <span className='status-dot' />
-          {isShiftActive ? 'Смена идёт' : shiftEndedAt ? 'Смена завершена' : 'Нет смены'}
+          {activeShift ? 'Смена идёт' : displayedShift ? 'Смена завершена' : 'Нет смены'}
         </span>
       </header>
 
       <section className='hero-card'>
-        <div className='hero-label'>Чистый заработок</div>
+        <div className='hero-label'>
+          {displayedShift ? 'Чистый заработок за смену' : 'Чистый заработок'}
+        </div>
+
         <div className='hero-profit'>{formatMoney(profit)}</div>
-        <p className='hero-caption'>Доходы минус расходы</p>
+
+        <p className='hero-caption'>
+          {displayedShift ? formatDate(displayedShift.startedAt) : 'Начни смену, чтобы вести учёт'}
+        </p>
 
         <div className='hero-stats'>
           <div>
@@ -198,8 +397,150 @@ function App() {
         </article>
       </section>
 
+      {/* Секция аналитики - начало */}
+
+      <section className='panel analytics-panel'>
+        <div className='section-heading'>
+          <div>
+            <h2>Аналитика заработка</h2>
+            <p>Результаты твоей работы</p>
+          </div>
+          <span className='section-symbol'>↗</span>
+        </div>
+
+        <div className='analytics-tabs'>
+          <button
+            className={analyticsPeriod === 'day' ? 'selected' : ''}
+            onClick={() => setAnalyticsPeriod('day')}
+          >
+            День
+          </button>
+          <button
+            className={analyticsPeriod === 'week' ? 'selected' : ''}
+            onClick={() => setAnalyticsPeriod('week')}
+          >
+            Неделя
+          </button>
+          <button
+            className={analyticsPeriod === 'month' ? 'selected' : ''}
+            onClick={() => setAnalyticsPeriod('month')}
+          >
+            Месяц
+          </button>
+        </div>
+
+        <p className='analytics-date'>
+          {periodStart.toLocaleDateString('ru-RU', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+          })}
+          {' — '}
+          {new Date(periodEnd.getTime() - 1).toLocaleDateString('ru-RU', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+          })}
+        </p>
+
+        <div className='analytics-summary'>
+          <div className='analytics-main-stat'>
+            <span>Чистая прибыль: </span>
+            <strong className={analyticsProfit >= 0 ? 'positive-text' : 'negative-text'}>
+              {formatMoney(analyticsProfit)}
+            </strong>
+          </div>
+
+          <div className='analytics-stat-row'>
+            <span>Выручка: </span>
+            <strong>{formatMoney(analyticsIncome)}</strong>
+          </div>
+
+          <div className='analytics-stat-row'>
+            <span>Расходы: </span>
+            <strong className='negative-text'>{formatMoney(analyticsExpenses)}</strong>
+          </div>
+
+          <div className='analytics-stat-row'>
+            <span>Количество смен: </span>
+            <strong>{analyticsShifts.length}</strong>
+          </div>
+
+          <div className='analytics-stat-row'>
+            <span>Время за рулём: </span>
+            <strong>
+              {Math.floor(analyticsHours)} ч {Math.floor((analyticsSeconds % 3600) / 60)} мин
+            </strong>
+          </div>
+
+          <div className='analytics-stat-row'>
+            <span>Прибыль в час: </span>
+            <strong>{formatMoney(analyticsHourlyProfit)}</strong>
+          </div>
+
+          <div className='analytics-stat-row'>
+            <span>Средняя прибыль за смену: </span>
+            <strong>{formatMoney(averageProfit)}</strong>
+          </div>
+        </div>
+
+        <h3 className='chart-title'>Доходы и расходы по дням</h3>
+
+        <div className='chart-legend'>
+          <span>
+            <i className='legend-income' /> Выручка
+          </span>
+          <span>
+            <i className='legend-expenses' /> Расходы
+          </span>
+          <span>
+            <i className='legend-profit' /> Прибыль
+          </span>
+        </div>
+
+        <div className='chart-scroll'>
+          <div className={`chart-grid ${analyticsPeriod === 'month' ? 'chart-month' : ''}`}>
+            {chartData.map(day => (
+              <div className='chart-day' key={day.key}>
+                <div className='chart-bars'>
+                  <div
+                    className='chart-bar bar-income'
+                    style={{
+                      height: `${Math.max(3, (day.income / chartMax) * 100)}%`
+                    }}
+                  />
+
+                  <div
+                    className='chart-bar bar-expenses'
+                    style={{
+                      height: `${Math.max(3, (day.expenses / chartMax) * 100)}%`
+                    }}
+                  />
+
+                  <div
+                    className={`chart-bar ${day.profit < 0 ? 'bar-negative-profit' : 'bar-profit'}`}
+                    style={{
+                      height: `${Math.max(3, (Math.abs(day.profit) / chartMax) * 100)}%`
+                    }}
+                  />
+                </div>
+                <span className='chart-day-label'>{day.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {analyticsShifts.length === 0 && (
+          <p className='analytics-empty'>
+            За этот период смен пока нет. Начни работать, и здесь появится статистика.
+          </p>
+        )}
+      </section>
+
+      {/* Секция аналитики - конец */}
+
       <section className='shift-controls'>
-        {!isShiftActive ? (
+        {!activeShift ? (
           <button className='button button-primary' onClick={startShift}>
             ▶ Начать новую смену
           </button>
@@ -219,7 +560,7 @@ function App() {
           <span className='section-symbol'>＋</span>
         </div>
 
-        {!isShiftActive ? (
+        {!activeShift ? (
           <div className='notice'>Чтобы учитывать операции, сначала начни смену.</div>
         ) : (
           <form className='operation-form' onSubmit={addOperation}>
@@ -231,6 +572,7 @@ function App() {
               >
                 + Доход
               </button>
+
               <button
                 type='button'
                 className={type === 'expense' ? 'selected expense-tab' : ''}
@@ -298,10 +640,12 @@ function App() {
                 >
                   {operation.type === 'income' ? '+' : '−'}
                 </div>
+
                 <div className='operation-details'>
                   <strong>{operation.category}</strong>
                   <span>{operation.time}</span>
                 </div>
+
                 <strong className={operation.type === 'income' ? 'positive-text' : 'negative-text'}>
                   {operation.type === 'income' ? '+' : '−'}
                   {formatMoney(operation.amount)}
@@ -312,7 +656,93 @@ function App() {
         )}
       </section>
 
-      <footer>TaxiProfit · Учёт каждой смены · ПК Линия · 181 / 7599</footer>
+      <section className='panel'>
+        <div className='section-heading'>
+          <div>
+            <h2>История смен</h2>
+            <p>Всего смен: {shifts.length}</p>
+          </div>
+        </div>
+
+        {shifts.length === 0 ? (
+          <div className='empty-state'>
+            <div className='empty-icon'>◷</div>
+            <strong>История пока пуста</strong>
+            <p>Завершённые смены будут появляться здесь.</p>
+          </div>
+        ) : (
+          <div className='shift-history'>
+            {shifts.map(shift => {
+              const shiftIncome = shift.operations
+                .filter(operation => operation.type === 'income')
+                .reduce((sum, operation) => sum + operation.amount, 0)
+
+              const shiftExpenses = shift.operations
+                .filter(operation => operation.type === 'expense')
+                .reduce((sum, operation) => sum + operation.amount, 0)
+
+              const duration = Math.max(
+                0,
+                Math.floor(((shift.endedAt ?? now) - shift.startedAt) / 1000)
+              )
+
+              const durationHours = Math.floor(duration / 3600)
+              const durationMinutes = Math.floor((duration % 3600) / 60)
+
+              console.log('Данные графика:', chartData)
+              console.log('Максимум графика:', chartMax)
+
+              return (
+                <article className='shift-history-item' key={shift.id}>
+                  <div className='shift-history-top'>
+                    <div>
+                      <strong>{formatDate(shift.startedAt)}</strong>
+                      <span>
+                        {formatDateTime(shift.startedAt)}
+                        {' — '}
+                        {shift.endedAt ? formatDateTime(shift.endedAt) : 'Сейчас'}
+                      </span>
+                    </div>
+
+                    <span className={`shift-badge ${shift.endedAt === null ? 'ongoing' : ''}`}>
+                      {shift.endedAt === null ? 'Активна' : 'Завершена'}
+                    </span>
+                  </div>
+
+                  <div className='shift-history-stats'>
+                    <div>
+                      <span>Выручка: </span>
+                      <strong>{formatMoney(shiftIncome)}</strong>
+                    </div>
+                    <div>
+                      <span>Расходы: </span>
+                      <strong>{formatMoney(shiftExpenses)}</strong>
+                    </div>
+                    <div>
+                      <span>Прибыль: </span>
+                      <strong
+                        className={
+                          shiftIncome - shiftExpenses >= 0 ? 'positive-text' : 'negative-text'
+                        }
+                      >
+                        {formatMoney(shiftIncome - shiftExpenses)}
+                      </strong>
+                    </div>
+                  </div>
+
+                  <div className='shift-duration'>
+                    Длительность: {durationHours} ч {durationMinutes} мин
+                    {' · '}
+                    Операций: {shift.operations.length}
+                  </div>
+                </article>
+              )
+            })}
+          </div>
+        )}
+      </section>
+
+      <footer>TaxiProfit · Учёт каждой смены</footer>
     </main>
   )
 }
