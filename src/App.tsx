@@ -95,6 +95,7 @@ function App() {
   const [now, setNow] = useState(Date.now())
 
   const [analyticsPeriod, setAnalyticsPeriod] = useState<AnalyticsPeriod>('week')
+  const [selectedOperationsShiftId, setSelectedOperationsShiftId] = useState<string | null>(null)
 
   const [type, setType] = useState<OperationType>('income')
   const [category, setCategory] = useState('Заказ')
@@ -121,10 +122,14 @@ function App() {
   // Активная смена — та, у которой ещё нет времени завершения.
   const activeShift = shifts.find(shift => shift.endedAt === null)
 
-  // После завершения показываем последнюю смену.
+  // Верхняя сводка показывает активную смену или последнюю завершённую.
   const displayedShift = activeShift ?? shifts[0]
 
-  const operations = displayedShift?.operations ?? []
+  // В истории можно отдельно выбрать смену для просмотра её операций.
+  const selectedOperationsShift =
+    shifts.find(shift => shift.id === selectedOperationsShiftId) ?? displayedShift
+
+  const operations = selectedOperationsShift?.operations ?? []
 
   const income = operations
     .filter(operation => operation.type === 'income')
@@ -274,6 +279,7 @@ function App() {
     }
 
     setShifts(previous => [newShift, ...previous])
+    setSelectedOperationsShiftId(newShift.id)
     setNow(Date.now())
     setAmount('')
   }
@@ -622,7 +628,11 @@ function App() {
         <div className='section-heading'>
           <div>
             <h2>История операций</h2>
-            <p>{operations.length} записей за смену</p>
+            <p>
+              {selectedOperationsShift
+                ? `Смена от ${formatDateTime(selectedOperationsShift.startedAt)} · ${operations.length} записей`
+                : 'Выбери смену, чтобы посмотреть операции'}
+            </p>
           </div>
         </div>
 
@@ -735,6 +745,17 @@ function App() {
                     {' · '}
                     Операций: {shift.operations.length}
                   </div>
+
+                  <button
+                    type='button'
+                    className='button button-primary'
+                    onClick={() => setSelectedOperationsShiftId(shift.id)}
+                    disabled={selectedOperationsShift?.id === shift.id}
+                  >
+                    {selectedOperationsShift?.id === shift.id
+                      ? 'Показана эта смена'
+                      : 'Показать операции'}
+                  </button>
                 </article>
               )
             })}
