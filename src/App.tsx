@@ -169,35 +169,41 @@ function App() {
   const periodEnd = new Date(periodStart)
   periodEnd.setDate(periodEnd.getDate() + periodDays)
 
-  // Учитываем смену по дате её начала.
-  const analyticsShifts = shifts.filter(
-    shift => shift.startedAt >= periodStart.getTime() && shift.startedAt < periodEnd.getTime()
+  // Смены, которые хотя бы частично пересекаются с выбранным периодом.
+  const periodStartTime = periodStart.getTime()
+  const periodEndTime = periodEnd.getTime()
+
+  const analyticsShifts = shifts.filter(shift => {
+    const shiftEnd = shift.endedAt ?? now
+    return shift.startedAt < periodEndTime && shiftEnd > periodStartTime
+  })
+
+  // Для финансовой аналитики учитываем операции по дате их создания,
+  // а не по дате начала смены. Это корректно работает и для смен через полночь.
+  const periodOperations = shifts.flatMap(shift =>
+    shift.operations.filter(operation => {
+      const timestamp = operation.createdAt ?? Number(operation.id)
+      return Number.isFinite(timestamp) && timestamp >= periodStartTime && timestamp < periodEndTime
+    })
   )
 
-  const analyticsIncome = analyticsShifts.reduce(
-    (total, shift) =>
-      total +
-      shift.operations
-        .filter(operation => operation.type === 'income')
-        .reduce((sum, operation) => sum + operation.amount, 0),
-    0
-  )
+  const analyticsIncome = periodOperations
+    .filter(operation => operation.type === 'income')
+    .reduce((sum, operation) => sum + operation.amount, 0)
 
-  const analyticsExpenses = analyticsShifts.reduce(
-    (total, shift) =>
-      total +
-      shift.operations
-        .filter(operation => operation.type === 'expense')
-        .reduce((sum, operation) => sum + operation.amount, 0),
-    0
-  )
+  const analyticsExpenses = periodOperations
+    .filter(operation => operation.type === 'expense')
+    .reduce((sum, operation) => sum + operation.amount, 0)
 
   const analyticsProfit = analyticsIncome - analyticsExpenses
 
-  const analyticsSeconds = analyticsShifts.reduce(
-    (total, shift) => total + Math.max(0, (shift.endedAt ?? now) - shift.startedAt) / 1000,
-    0
-  )
+  // Считаем только то время смен, которое попало в выбранный период.
+  const analyticsSeconds = analyticsShifts.reduce((total, shift) => {
+    const shiftEnd = shift.endedAt ?? now
+    const overlapStart = Math.max(shift.startedAt, periodStartTime)
+    const overlapEnd = Math.min(shiftEnd, periodEndTime)
+    return total + Math.max(0, overlapEnd - overlapStart) / 1000
+  }, 0)
 
   const analyticsHours = analyticsSeconds / 3600
 
@@ -231,12 +237,6 @@ function App() {
         return dateKey(new Date(timestamp)) === key
       })
     )
-
-    // const dayOperations = shifts.flatMap(shift =>
-    //   shift.operations.filter(operation => {
-    //     return dateKey(new Date(operation.createdAt)) === key
-    //   })
-    // )
 
     const dayIncome = dayOperations
       .filter(operation => operation.type === 'income')
@@ -505,6 +505,7 @@ function App() {
                 <div className='chart-bars'>
                   <div
                     className='chart-bar bar-income'
+                    title={`Выручка: ${formatMoney(day.income)}`}
                     style={{
                       height: `${Math.max(3, (day.income / chartMax) * 100)}%`
                     }}
@@ -512,6 +513,7 @@ function App() {
 
                   <div
                     className='chart-bar bar-expenses'
+                    title={`Расходы: ${formatMoney(day.expenses)}`}
                     style={{
                       height: `${Math.max(3, (day.expenses / chartMax) * 100)}%`
                     }}
@@ -519,6 +521,7 @@ function App() {
 
                   <div
                     className={`chart-bar ${day.profit < 0 ? 'bar-negative-profit' : 'bar-profit'}`}
+                    title={`Прибыль: ${formatMoney(day.profit)}`}
                     style={{
                       height: `${Math.max(3, (Math.abs(day.profit) / chartMax) * 100)}%`
                     }}
@@ -688,9 +691,6 @@ function App() {
 
               const durationHours = Math.floor(duration / 3600)
               const durationMinutes = Math.floor((duration % 3600) / 60)
-
-              console.log('Данные графика:', chartData)
-              console.log('Максимум графика:', chartMax)
 
               return (
                 <article className='shift-history-item' key={shift.id}>
