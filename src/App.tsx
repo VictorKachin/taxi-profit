@@ -50,6 +50,24 @@ function App() {
   const [category, setCategory] = useState('Заказ')
   const [amount, setAmount] = useState('')
 
+  // Восстанавливаем операции после перезагрузки страницы
+  useEffect(() => {
+    try {
+      const savedOperations = localStorage.getItem('taxiprofit-operations')
+
+      if (savedOperations) {
+        setOperations(JSON.parse(savedOperations) as Operation[])
+      }
+    } catch {
+      console.error('Не удалось загрузить сохранённые операции')
+    }
+  }, [])
+
+  // Сохраняем операции при каждом изменении
+  useEffect(() => {
+    localStorage.setItem('taxiprofit-operations', JSON.stringify(operations))
+  }, [operations])
+
   useEffect(() => {
     const timer = window.setInterval(() => setNow(Date.now()), 1000)
     return () => window.clearInterval(timer)
