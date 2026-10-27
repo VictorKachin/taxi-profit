@@ -1,7 +1,3 @@
-/* ========================================
-   Старый СТИЛЬ
-   ======================================== */
-
 #root {
   min-height: 100vh;
 }
@@ -49,10 +45,10 @@
 }
 
 .brand-icon-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 20%;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 20%;
 }
 
 .brand h1,
@@ -633,7 +629,6 @@ footer {
 }
 
 @media (max-width: 480px) {
-
   .app-shell {
     width: calc(100% - 24px);
     padding-top: 18px;
@@ -810,9 +805,6 @@ footer {
   }
 }
 
-
-
-
 /* История смен: единый стиль карточек для всех размеров экрана */
 .shift-history {
   display: grid;
@@ -910,7 +902,6 @@ footer {
     font-size: 11px;
   }
 }
-
 
 /* Раскрывающиеся подробности смены */
 .shift-details-button {

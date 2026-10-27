@@ -141,7 +141,6 @@ function App() {
     .filter(operation => operation.type === 'expense')
     .reduce((sum, operation) => sum + operation.amount, 0)
 
-  const profit = income - expenses
   // Зарплата считается от общей выручки до вычета расходов.
   const salary = income * 0.25
 
@@ -204,8 +203,6 @@ function App() {
     .filter(operation => operation.type === 'expense')
     .reduce((sum, operation) => sum + operation.amount, 0)
 
-  const analyticsProfit = analyticsIncome - analyticsExpenses
-
   // Считаем только то время смен, которое попало в выбранный период.
   const analyticsSeconds = analyticsShifts.reduce((total, shift) => {
     const shiftEnd = shift.endedAt ?? now
@@ -215,10 +212,6 @@ function App() {
   }, 0)
 
   const analyticsHours = analyticsSeconds / 3600
-
-  const averageProfit = analyticsShifts.length > 0 ? analyticsProfit / analyticsShifts.length : 0
-
-  const analyticsHourlyProfit = analyticsHours > 0 ? analyticsProfit / analyticsHours : 0
 
   function dateKey(date: Date) {
     const year = date.getFullYear()
@@ -247,7 +240,6 @@ function App() {
       })
     )
 
-
     const dayIncome = dayOperations
       .filter(operation => operation.type === 'income')
       .reduce((sum, operation) => sum + operation.amount, 0)
@@ -263,14 +255,13 @@ function App() {
         month: 'short'
       }),
       income: dayIncome,
-      expenses: dayExpenses,
-      profit: dayIncome - dayExpenses
+      expenses: dayExpenses
     }
   })
 
   const chartMax = Math.max(
     1,
-    ...chartData.flatMap(day => [day.income, day.expenses, Math.abs(day.profit)])
+    ...chartData.flatMap(day => [day.income, day.expenses])
   )
 
   function startShift() {
@@ -362,203 +353,6 @@ function App() {
         </span>
       </header>
 
-      <section className='hero-card'>
-        <div className='hero-label'>
-          {displayedShift ? 'Чистый заработок за смену' : 'Чистый заработок'}
-        </div>
-
-        <div className='hero-profit'>{formatMoney(profit)}</div>
-
-        <p className='hero-caption'>
-          {displayedShift ? formatDate(displayedShift.startedAt) : 'Начни смену, чтобы вести учёт'}
-        </p>
-
-        <div className='hero-stats'>
-          <div>
-            <span>Выручка</span>
-            <strong>{formatMoney(income)}</strong>
-          </div>
-          <div>
-            <span>Расходы</span>
-            <strong>{formatMoney(expenses)}</strong>
-          </div>
-          <div>
-            <span>Зарплата · 25%</span>
-            <strong>{formatMoney(salary)}</strong>
-          </div>
-        </div>
-      </section>
-
-      <section className='metrics'>
-        <article className='metric-card'>
-          <span className='metric-icon'>↗</span>
-          <span className='metric-label'>Заказы</span>
-          <strong>{orderCount}</strong>
-        </article>
-
-        <article className='metric-card'>
-          <span className='metric-icon'>◷</span>
-          <span className='metric-label'>Время смены</span>
-          <strong>
-            {String(hours).padStart(2, '0')}:{String(minutes).padStart(2, '0')}:
-            {String(seconds).padStart(2, '0')}
-          </strong>
-        </article>
-
-        <article className='metric-card'>
-          <span className='metric-icon'>₿</span>
-          <span className='metric-label'>Заработок в час</span>
-          <strong>
-            {elapsedSeconds > 0 ? formatMoney(profit / (elapsedSeconds / 3600)) : formatMoney(0)}
-          </strong>
-        </article>
-      </section>
-
-      {/* Секция аналитики - начало */}
-
-      <section className='panel analytics-panel'>
-        <div className='section-heading'>
-          <div>
-            <h2>Аналитика заработка</h2>
-            <p>Результаты твоей работы</p>
-          </div>
-          <span className='section-symbol'>↗</span>
-        </div>
-
-        <div className='analytics-tabs'>
-          <button
-            className={analyticsPeriod === 'day' ? 'selected' : ''}
-            onClick={() => setAnalyticsPeriod('day')}
-          >
-            День
-          </button>
-          <button
-            className={analyticsPeriod === 'week' ? 'selected' : ''}
-            onClick={() => setAnalyticsPeriod('week')}
-          >
-            Неделя
-          </button>
-          <button
-            className={analyticsPeriod === 'month' ? 'selected' : ''}
-            onClick={() => setAnalyticsPeriod('month')}
-          >
-            Месяц
-          </button>
-        </div>
-
-        <p className='analytics-date'>
-          {periodStart.toLocaleDateString('ru-RU', {
-            day: 'numeric',
-            month: 'long',
-            year: 'numeric'
-          })}
-          {' — '}
-          {new Date(periodEnd.getTime() - 1).toLocaleDateString('ru-RU', {
-            day: 'numeric',
-            month: 'long',
-            year: 'numeric'
-          })}
-        </p>
-
-        <div className='analytics-summary'>
-          <div className='analytics-main-stat'>
-            <span>Чистая прибыль: </span>
-            <strong className={analyticsProfit >= 0 ? 'positive-text' : 'negative-text'}>
-              {formatMoney(analyticsProfit)}
-            </strong>
-          </div>
-
-          <div className='analytics-stat-row'>
-            <span>Выручка: </span>
-            <strong>{formatMoney(analyticsIncome)}</strong>
-          </div>
-
-          <div className='analytics-stat-row'>
-            <span>Расходы: </span>
-            <strong className='negative-text'>{formatMoney(analyticsExpenses)}</strong>
-          </div>
-
-          <div className='analytics-stat-row'>
-            <span>Количество смен: </span>
-            <strong>{analyticsShifts.length}</strong>
-          </div>
-
-          <div className='analytics-stat-row'>
-            <span>Время за рулём: </span>
-            <strong>
-              {Math.floor(analyticsHours)} ч {Math.floor((analyticsSeconds % 3600) / 60)} мин
-            </strong>
-          </div>
-
-          <div className='analytics-stat-row'>
-            <span>Прибыль в час: </span>
-            <strong>{formatMoney(analyticsHourlyProfit)}</strong>
-          </div>
-
-          <div className='analytics-stat-row'>
-            <span>Средняя прибыль за смену: </span>
-            <strong>{formatMoney(averageProfit)}</strong>
-          </div>
-        </div>
-
-        <h3 className='chart-title'>Доходы и расходы по дням</h3>
-
-        <div className='chart-legend'>
-          <span>
-            <i className='legend-income' /> Выручка
-          </span>
-          <span>
-            <i className='legend-expenses' /> Расходы
-          </span>
-          <span>
-            <i className='legend-profit' /> Прибыль
-          </span>
-        </div>
-
-        <div className='chart-scroll'>
-          <div className={`chart-grid ${analyticsPeriod === 'month' ? 'chart-month' : ''}`}>
-            {chartData.map(day => (
-              <div className='chart-day' key={day.key}>
-                <div className='chart-bars'>
-                  <div
-                    className='chart-bar bar-income'
-                    title={`Выручка: ${formatMoney(day.income)}`}
-                    style={{
-                      height: `${Math.max(3, (day.income / chartMax) * 100)}%`
-                    }}
-                  />
-
-                  <div
-                    className='chart-bar bar-expenses'
-                    title={`Расходы: ${formatMoney(day.expenses)}`}
-                    style={{
-                      height: `${Math.max(3, (day.expenses / chartMax) * 100)}%`
-                    }}
-                  />
-
-                  <div
-                    className={`chart-bar ${day.profit < 0 ? 'bar-negative-profit' : 'bar-profit'}`}
-                    title={`Прибыль: ${formatMoney(day.profit)}`}
-                    style={{
-                      height: `${Math.max(3, (Math.abs(day.profit) / chartMax) * 100)}%`
-                    }}
-                  />
-                </div>
-                <span className='chart-day-label'>{day.label}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {analyticsShifts.length === 0 && (
-          <p className='analytics-empty'>
-            За этот период смен пока нет. Начни работать, и здесь появится статистика.
-          </p>
-        )}
-      </section>
-
-      {/* Секция аналитики - конец */}
-
       <section className='shift-controls'>
         {!activeShift ? (
           <button className='button button-primary' onClick={startShift}>
@@ -635,7 +429,6 @@ function App() {
         )}
       </section>
 
-
       <section className='panel'>
         <div className='section-heading'>
           <div>
@@ -680,6 +473,177 @@ function App() {
           </div>
         )}
       </section>
+
+      <section className='hero-card'>
+        <div className='hero-label'>
+          {displayedShift ? 'Выручка за смену' : 'Выручка'}
+        </div>
+
+        <div className='hero-profit'>{formatMoney(income)}</div>
+
+        <p className='hero-caption'>
+          {displayedShift ? formatDate(displayedShift.startedAt) : 'Начни смену, чтобы вести учёт'}
+        </p>
+
+        <div className='hero-stats'>
+          <div>
+            <span>Заказы</span>
+            <strong>{orderCount}</strong>
+          </div>
+          <div>
+            <span>Расходы</span>
+            <strong>{formatMoney(expenses)}</strong>
+          </div>
+          <div>
+            <span>Зарплата · 25%</span>
+            <strong>{formatMoney(salary)}</strong>
+          </div>
+        </div>
+      </section>
+
+      <section className='metrics'>
+        <article className='metric-card'>
+          <span className='metric-icon'>↗</span>
+          <span className='metric-label'>Заказы</span>
+          <strong>{orderCount}</strong>
+        </article>
+
+        <article className='metric-card'>
+          <span className='metric-icon'>◷</span>
+          <span className='metric-label'>Время смены</span>
+          <strong>
+            {String(hours).padStart(2, '0')}:{String(minutes).padStart(2, '0')}:
+            {String(seconds).padStart(2, '0')}
+          </strong>
+        </article>
+
+        <article className='metric-card'>
+          <span className='metric-icon'>₿</span>
+          <span className='metric-label'>Выручка в час</span>
+          <strong>
+            {elapsedSeconds > 0 ? formatMoney(income / (elapsedSeconds / 3600)) : formatMoney(0)}
+          </strong>
+        </article>
+      </section>
+
+      {/* Секция аналитики - начало */}
+
+      <section className='panel analytics-panel'>
+        <div className='section-heading'>
+          <div>
+            <h2>Аналитика выручки</h2>
+            <p>Результаты твоей работы</p>
+          </div>
+          <span className='section-symbol'>↗</span>
+        </div>
+
+        <div className='analytics-tabs'>
+          <button
+            className={analyticsPeriod === 'day' ? 'selected' : ''}
+            onClick={() => setAnalyticsPeriod('day')}
+          >
+            День
+          </button>
+          <button
+            className={analyticsPeriod === 'week' ? 'selected' : ''}
+            onClick={() => setAnalyticsPeriod('week')}
+          >
+            Неделя
+          </button>
+          <button
+            className={analyticsPeriod === 'month' ? 'selected' : ''}
+            onClick={() => setAnalyticsPeriod('month')}
+          >
+            Месяц
+          </button>
+        </div>
+
+        <p className='analytics-date'>
+          {periodStart.toLocaleDateString('ru-RU', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+          })}
+          {' — '}
+          {new Date(periodEnd.getTime() - 1).toLocaleDateString('ru-RU', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+          })}
+        </p>
+
+        <div className='analytics-summary'>
+          <div className='analytics-main-stat'>
+            <span>Выручка за период</span>
+            <strong>{formatMoney(analyticsIncome)}</strong>
+          </div>
+
+          <div className='analytics-stat-row'>
+            <span>Расходы: </span>
+            <strong className='negative-text'>{formatMoney(analyticsExpenses)}</strong>
+          </div>
+
+          <div className='analytics-stat-row'>
+            <span>Количество смен: </span>
+            <strong>{analyticsShifts.length}</strong>
+          </div>
+
+          <div className='analytics-stat-row'>
+            <span>Время за рулём: </span>
+            <strong>
+              {Math.floor(analyticsHours)} ч {Math.floor((analyticsSeconds % 3600) / 60)} мин
+            </strong>
+          </div>
+
+        </div>
+
+        <h3 className='chart-title'>Выручка и расходы по дням</h3>
+
+        <div className='chart-legend'>
+          <span>
+            <i className='legend-income' /> Выручка
+          </span>
+          <span>
+            <i className='legend-expenses' /> Расходы
+          </span>
+        </div>
+
+        <div className='chart-scroll'>
+          <div className={`chart-grid ${analyticsPeriod === 'month' ? 'chart-month' : ''}`}>
+            {chartData.map(day => (
+              <div className='chart-day' key={day.key}>
+                <div className='chart-bars'>
+                  <div
+                    className='chart-bar bar-income'
+                    title={`Выручка: ${formatMoney(day.income)}`}
+                    style={{
+                      height: `${Math.max(3, (day.income / chartMax) * 100)}%`
+                    }}
+                  />
+
+                  <div
+                    className='chart-bar bar-expenses'
+                    title={`Расходы: ${formatMoney(day.expenses)}`}
+                    style={{
+                      height: `${Math.max(3, (day.expenses / chartMax) * 100)}%`
+                    }}
+                  />
+
+                </div>
+                <span className='chart-day-label'>{day.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {analyticsShifts.length === 0 && (
+          <p className='analytics-empty'>
+            За этот период смен пока нет. Начни работать, и здесь появится статистика.
+          </p>
+        )}
+      </section>
+
+      {/* Секция аналитики - конец */}
 
       <section className='panel'>
         <div className='section-heading'>
@@ -747,14 +711,8 @@ function App() {
                       <strong>{formatMoney(shiftExpenses)}</strong>
                     </div>
                     <div>
-                      <span>Прибыль: </span>
-                      <strong
-                        className={
-                          shiftIncome - shiftExpenses >= 0 ? 'positive-text' : 'negative-text'
-                        }
-                      >
-                        {formatMoney(shiftIncome - shiftExpenses)}
-                      </strong>
+                      <span>Зарплата · 25%: </span>
+                      <strong>{formatMoney(shiftIncome * 0.25)}</strong>
                     </div>
                   </div>
 
