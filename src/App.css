@@ -1,3 +1,7 @@
+/* ========================================
+   Старый СТИЛЬ
+   ======================================== */
+
 #root {
   min-height: 100vh;
 }
@@ -38,10 +42,17 @@
   width: 48px;
   height: 48px;
   border-radius: 15px;
-  background: #16a879;
+  /*background: #16a879;*/
   color: white;
   font-size: 25px;
   font-weight: 800;
+}
+
+.brand-icon-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 20%;
 }
 
 .brand h1,
@@ -621,309 +632,159 @@ footer {
   line-height: 1.6;
 }
 
-.shift-history {
-  display: grid;
-  gap: 12px;
-}
-
-.shift-history-item {
-  padding: 15px;
-  border: 1px solid #edf0f4;
-  border-radius: 15px;
-  background: #ffffff;
-}
-
-.shift-history-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 12px;
-}
-
-.shift-history-top strong {
-  font-size: 13px;
-}
-
-.shift-badge {
-  display: inline-block;
-  padding: 5px 9px;
-  border-radius: 8px;
-  background: #e9f8f0;
-  color: #138354;
-  font-size: 10px;
-  font-weight: 700;
-}
-
-.shift-history-stats {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-}
-
-.shift-history-stats span {
-  display: block;
-  color: #8792a3;
-  font-size: 11px;
-}
-
-.shift-history-stats strong {
-  display: block;
-  margin-top: 5px;
-  font-size: 13px;
-  overflow-wrap: anywhere;
-}
-
-.shift-duration {
-  margin-top: 12px;
-  color: #687489;
-  font-size: 12px;
-}
-
-/* ========================================
-   Аналитика
-   ======================================== */
-
-.analytics-panel {
-  overflow: hidden;
-}
-
-.analytics-tabs {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 5px;
-  padding: 5px;
-  border-radius: 12px;
-  background: #f0f3f6;
-}
-
-.analytics-tabs button {
-  min-height: 39px;
-  padding: 8px 5px;
-  border: 0;
-  border-radius: 9px;
-  background: transparent;
-  color: #687489;
-  font-size: 13px;
-  cursor: pointer;
-}
-
-.analytics-tabs button.selected {
-  background: #ffffff;
-  color: #138354;
-  font-weight: 700;
-  box-shadow: 0 1px 4px #17233712;
-}
-
-.analytics-date {
-  margin: 15px 0;
-  color: #8792a3;
-  font-size: 12px;
-}
-
-.analytics-summary {
-  padding: 17px;
-  border-radius: 15px;
-  background: #f6f8fa;
-}
-
-.analytics-main-stat {
-  display: grid;
-  gap: 8px;
-  padding-bottom: 15px;
-  border-bottom: 1px solid #e5eaf0;
-}
-
-.analytics-main-stat span {
-  color: #718097;
-  font-size: 13px;
-}
-
-.analytics-main-stat strong {
-  font-size: 27px;
-  overflow-wrap: anywhere;
-}
-
-.analytics-stat-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 12px;
-  padding-top: 14px;
-}
-
-.analytics-stat-row span {
-  color: #718097;
-  font-size: 12px;
-}
-
-.analytics-stat-row strong {
-  font-size: 13px;
-  text-align: right;
-  overflow-wrap: anywhere;
-}
-
-.analytics-empty {
-  margin: 15px 0 0;
-  color: #8792a3;
-  font-size: 12px;
-  line-height: 1.6;
-}
-
-/* ========================================
-   График доходов, расходов и прибыли
-   Эти стили работают на всех экранах
-   ======================================== */
-
-.chart-title {
-  margin: 24px 0 13px;
-  font-size: 14px;
-}
-
-.chart-legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-bottom: 15px;
-}
-
-.chart-legend span {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  color: #687489;
-  font-size: 10px;
-}
-
-.chart-legend i {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  flex-shrink: 0;
-  border-radius: 3px;
-}
-
-.legend-income {
-  background: #16a879;
-}
-
-.legend-expenses {
-  background: #f0a35c;
-}
-
-.legend-profit {
-  background: #5685e8;
-}
-
-.chart-scroll {
-  display: block;
-  width: 100%;
-  overflow-x: auto;
-  padding-bottom: 8px;
-}
-
-.chart-grid {
-  display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 8px;
-  min-width: 0;
-}
-
-.chart-grid.chart-month {
-  grid-template-columns: repeat(31, minmax(15px, 1fr));
-  min-width: 560px;
-}
-
-.chart-day {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-  align-items: center;
-  gap: 9px;
-}
-
-.chart-bars {
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  gap: 3px;
-  width: 100%;
-  height: 130px;
-  min-height: 130px;
-  padding-top: 5px;
-  box-sizing: border-box;
-  border-bottom: 1px solid #e8edf2;
-}
-
-.chart-bar {
-  display: block;
-  flex: 0 0 10px;
-  min-width: 3px;
-  border-radius: 4px 4px 1px 1px;
-  transition: height 0.2s ease;
-}
-
-.bar-income {
-  background: #16a879;
-}
-
-.bar-expenses {
-  background: #f0a35c;
-}
-
-.bar-profit {
-  background: #5685e8;
-}
-
-.bar-negative-profit {
-  background: #d85c54;
-}
-
-.chart-day-label {
-  color: #778399;
-  font-size: 10px;
-  white-space: nowrap;
-}
-
-/* ========================================
-   Адаптация для мобильных экранов
-   Здесь только дополнительные настройки
-   ======================================== */
-
 @media (max-width: 480px) {
+
   .app-shell {
-    padding: 16px 12px 28px;
+    width: calc(100% - 24px);
+    padding-top: 18px;
   }
 
-  .topbar {
-    margin-bottom: 18px;
+  .brand h1 {
+    font-size: 20px;
   }
 
-  .topbar h1 {
-    font-size: 23px;
+  .brand p {
+    max-width: 150px;
+    line-height: 1.4;
+  }
+
+  .status {
+    padding: 7px 9px;
+    font-size: 10px;
+  }
+
+  .hero-card {
+    padding: 22px 19px;
+    border-radius: 20px;
+  }
+
+  .hero-stats {
+    gap: 20px;
+  }
+
+  .hero-stats strong {
+    font-size: 15px;
+  }
+
+  .metrics {
+    gap: 8px;
+  }
+
+  .metric-card {
+    padding: 12px 9px;
+    border-radius: 14px;
+  }
+
+  .metric-icon {
+    width: 30px;
+    height: 30px;
+  }
+
+  .metric-label {
+    font-size: 11px;
   }
 
   .panel {
+    padding: 17px;
+    border-radius: 17px;
+  }
+
+  .shift-history {
+    display: grid;
+    gap: 12px;
+  }
+
+  .shift-history-item {
     padding: 16px;
-    border-radius: 18px;
+    border: 1px solid #e8edf2;
+    border-radius: 15px;
+    background: #fbfcfd;
   }
 
-  .profit-card {
-    padding: 20px;
+  .shift-history-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
   }
 
-  .profit-card h2 {
-    font-size: 30px;
+  .shift-history-top > div {
+    display: grid;
+    gap: 6px;
   }
 
-  .stat-card {
+  .shift-history-top strong {
+    font-size: 14px;
+  }
+
+  .shift-history-top > div > span {
+    color: #7a8699;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .shift-badge {
+    padding: 6px 9px;
+    border-radius: 20px;
+    background: #e9edf2;
+    color: #637086;
+    font-size: 11px;
+    white-space: nowrap;
+  }
+
+  .shift-badge.ongoing {
+    background: #e1f8ed;
+    color: #138354;
+  }
+
+  .shift-history-stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 18px;
+  }
+
+  .shift-history-stats > div {
+    display: grid;
+    align-content: start;
+    gap: 7px;
+    min-width: 0;
+  }
+
+  .shift-history-stats span {
+    color: #7a8699;
+    font-size: 11px;
+  }
+
+  .shift-history-stats strong {
+    font-size: 13px;
+    overflow-wrap: anywhere;
+  }
+
+  .shift-duration {
+    margin-top: 15px;
+    padding-top: 12px;
+    border-top: 1px solid #e8edf2;
+    color: #7a8699;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 380px) {
+  .shift-history-item {
     padding: 12px;
   }
 
-  .stat-card strong {
-    font-size: 16px;
+  .shift-history-stats {
+    gap: 5px;
   }
 
+  .shift-history-stats strong {
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 480px) {
   .analytics-summary {
     padding: 14px;
   }
@@ -946,5 +807,106 @@ footer {
 
   .chart-bar {
     flex-basis: 7px;
+  }
+}
+
+
+
+
+/* История смен: единый стиль карточек для всех размеров экрана */
+.shift-history {
+  display: grid;
+  gap: 12px;
+}
+
+.shift-history-item {
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid #e8edf2;
+  border-radius: 15px;
+  background: #fbfcfd;
+}
+
+.shift-history-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.shift-history-top > div {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.shift-history-top strong {
+  font-size: 14px;
+}
+
+.shift-history-top > div > span {
+  color: #7a8699;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.shift-badge {
+  flex-shrink: 0;
+  padding: 6px 9px;
+  border-radius: 20px;
+  background: #e9edf2;
+  color: #637086;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.shift-badge.ongoing {
+  background: #e1f8ed;
+  color: #138354;
+}
+
+.shift-history-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.shift-history-stats > div {
+  display: grid;
+  align-content: start;
+  gap: 7px;
+  min-width: 0;
+}
+
+.shift-history-stats span {
+  color: #7a8699;
+  font-size: 11px;
+}
+
+.shift-history-stats strong {
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.shift-duration {
+  margin-top: 15px;
+  padding-top: 12px;
+  border-top: 1px solid #e8edf2;
+  color: #7a8699;
+  font-size: 12px;
+}
+
+@media (max-width: 380px) {
+  .shift-history-item {
+    padding: 12px;
+  }
+
+  .shift-history-stats {
+    gap: 5px;
+  }
+
+  .shift-history-stats strong {
+    font-size: 11px;
   }
 }

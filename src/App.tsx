@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
+import logo from './assets/7599.png'
 import './App.css'
 
 type OperationType = 'income' | 'expense'
@@ -26,7 +27,7 @@ const LEGACY_STORAGE_KEY = 'taxiprofit-operations'
 
 const expenseCategories = ['Топливо', 'Комиссия агрегатора', 'Мойка', 'Парковка', 'Прочее']
 
-const incomeCategories = ['Заказ', 'Чаевые', 'Бонус', 'Прочее']
+const incomeCategories = ['Заказ', 'Бонус', 'Прочее']
 
 function formatMoney(amount: number) {
   return new Intl.NumberFormat('ru-RU', {
@@ -140,6 +141,8 @@ function App() {
     .reduce((sum, operation) => sum + operation.amount, 0)
 
   const profit = income - expenses
+  // Зарплата считается от общей выручки до вычета расходов.
+  const salary = income * 0.25
 
   const orderCount = operations.filter(
     operation => operation.type === 'income' && operation.category === 'Заказ'
@@ -243,6 +246,7 @@ function App() {
       })
     )
 
+
     const dayIncome = dayOperations
       .filter(operation => operation.type === 'income')
       .reduce((sum, operation) => sum + operation.amount, 0)
@@ -342,10 +346,12 @@ function App() {
     <main className='app-shell'>
       <header className='topbar'>
         <div className='brand'>
-          <div className='brand-icon'>T</div>
+          <div className='brand-icon'>
+            <img className='brand-icon-img' src={logo} alt="logo" />
+          </div>
           <div>
             <h1>TaxiProfit</h1>
-            <p>Твой заработок под контролем</p>
+            <p>Контроль дохода</p>
           </div>
         </div>
 
@@ -374,6 +380,10 @@ function App() {
           <div>
             <span>Расходы</span>
             <strong>{formatMoney(expenses)}</strong>
+          </div>
+          <div>
+            <span>Зарплата · 25%</span>
+            <strong>{formatMoney(salary)}</strong>
           </div>
         </div>
       </section>
@@ -623,6 +633,7 @@ function App() {
           </form>
         )}
       </section>
+
 
       <section className='panel'>
         <div className='section-heading'>
