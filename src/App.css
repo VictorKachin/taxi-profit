@@ -910,3 +910,128 @@ footer {
     font-size: 11px;
   }
 }
+
+
+/* Раскрывающиеся подробности смены */
+.shift-details-button {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.shift-details-button span {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.shift-details {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #e8edf2;
+}
+
+.shift-details-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.shift-details-summary > div {
+  display: grid;
+  align-content: start;
+  gap: 6px;
+  min-width: 0;
+}
+
+.shift-details-summary span {
+  color: #7a8699;
+  font-size: 11px;
+}
+
+.shift-details-summary strong {
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.shift-details h3 {
+  margin: 20px 0 8px;
+  font-size: 14px;
+}
+
+.shift-details-empty {
+  margin: 0;
+  color: #8792a3;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.shift-details-operations {
+  display: grid;
+}
+
+.shift-details-operation {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 0;
+  border-bottom: 1px solid #edf0f4;
+}
+
+.shift-details-operation:last-child {
+  border-bottom: 0;
+}
+
+.shift-details-operation-icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.shift-details-operation-icon.positive {
+  background: #e1f8ed;
+  color: #138354;
+}
+
+.shift-details-operation-icon.negative {
+  background: #ffebe7;
+  color: #bd4938;
+}
+
+.shift-details-operation-info {
+  display: grid;
+  flex: 1;
+  gap: 4px;
+  min-width: 0;
+}
+
+.shift-details-operation-info strong {
+  font-size: 12px;
+}
+
+.shift-details-operation-info span {
+  color: #8792a3;
+  font-size: 11px;
+}
+
+.shift-details-operation > strong {
+  max-width: 45%;
+  font-size: 12px;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 380px) {
+  .shift-details-summary {
+    gap: 5px;
+  }
+
+  .shift-details-summary strong {
+    font-size: 11px;
+  }
+}

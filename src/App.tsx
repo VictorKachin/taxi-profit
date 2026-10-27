@@ -97,6 +97,7 @@ function App() {
 
   const [analyticsPeriod, setAnalyticsPeriod] = useState<AnalyticsPeriod>('week')
   const [selectedOperationsShiftId, setSelectedOperationsShiftId] = useState<string | null>(null)
+  const [expandedShiftId, setExpandedShiftId] = useState<string | null>(null)
 
   const [type, setType] = useState<OperationType>('income')
   const [category, setCategory] = useState('Заказ')
@@ -705,6 +706,12 @@ function App() {
                 .filter(operation => operation.type === 'expense')
                 .reduce((sum, operation) => sum + operation.amount, 0)
 
+              const shiftSalary = shiftIncome * 0.25
+              const shiftOrderCount = shift.operations.filter(
+                operation => operation.type === 'income' && operation.category === 'Заказ'
+              ).length
+              const isExpanded = expandedShiftId === shift.id
+
               const duration = Math.max(
                 0,
                 Math.floor(((shift.endedAt ?? now) - shift.startedAt) / 1000)
@@ -759,14 +766,66 @@ function App() {
 
                   <button
                     type='button'
-                    className='button button-primary'
-                    onClick={() => setSelectedOperationsShiftId(shift.id)}
-                    disabled={selectedOperationsShift?.id === shift.id}
+                    className='button button-primary shift-details-button'
+                    aria-expanded={isExpanded}
+                    onClick={() => {
+                      setExpandedShiftId(isExpanded ? null : shift.id)
+                      setSelectedOperationsShiftId(shift.id)
+                    }}
                   >
-                    {selectedOperationsShift?.id === shift.id
-                      ? 'Показана эта смена'
-                      : 'Показать операции'}
+                    {isExpanded ? 'Скрыть подробности' : 'Подробнее о смене'}
+                    <span aria-hidden='true'>{isExpanded ? '⌃' : '⌄'}</span>
                   </button>
+
+                  {isExpanded && (
+                    <div className='shift-details'>
+                      <div className='shift-details-summary'>
+                        <div>
+                          <span>Зарплата · 25%</span>
+                          <strong>{formatMoney(shiftSalary)}</strong>
+                        </div>
+                        <div>
+                          <span>Заказы</span>
+                          <strong>{shiftOrderCount}</strong>
+                        </div>
+                        <div>
+                          <span>Всего операций</span>
+                          <strong>{shift.operations.length}</strong>
+                        </div>
+                      </div>
+
+                      <h3>Операции смены</h3>
+                      {shift.operations.length === 0 ? (
+                        <p className='shift-details-empty'>В этой смене пока нет операций.</p>
+                      ) : (
+                        <div className='shift-details-operations'>
+                          {shift.operations.map(operation => (
+                            <div className='shift-details-operation' key={operation.id}>
+                              <span
+                                className={`shift-details-operation-icon ${
+                                  operation.type === 'income' ? 'positive' : 'negative'
+                                }`}
+                                aria-hidden='true'
+                              >
+                                {operation.type === 'income' ? '+' : '−'}
+                              </span>
+                              <div className='shift-details-operation-info'>
+                                <strong>{operation.category}</strong>
+                                <span>{operation.time}</span>
+                              </div>
+                              <strong
+                                className={
+                                  operation.type === 'income' ? 'positive-text' : 'negative-text'
+                                }
+                              >
+                                {operation.type === 'income' ? '+' : '−'}{formatMoney(operation.amount)}
+                              </strong>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </article>
               )
             })}
